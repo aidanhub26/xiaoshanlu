@@ -80,7 +80,7 @@ export default function App() {
 
       {/* Bottom nav */}
       <div className="fixed bottom-0 left-0 right-0 z-10">
-        <div className="max-w-[430px] mx-auto bg-white border-t border-[#F0EDE8] flex pb-safe">
+        <div className="max-w-[430px] mx-auto bg-white border-t border-[#F0EDE8] flex" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}>
           <NavItem
             icon={<TodayNavIcon />}
             label="记录"
