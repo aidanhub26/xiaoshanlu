@@ -39,6 +39,24 @@ function GivingField({ value, onChange, readOnly }) {
   )
 }
 
+function RepentanceField({ value, onChange, readOnly }) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="mt-3 w-5 h-5 rounded-full bg-[#F3F0F8] text-[#7C6FA0] text-xs flex items-center justify-center font-medium flex-shrink-0">
+        悔
+      </span>
+      <textarea
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        readOnly={readOnly}
+        placeholder="今日一件忏悔（选填）"
+        rows={2}
+        className={`flex-1 bg-[#F7F5F1] rounded-xl px-4 py-3 text-[15px] text-[#1A1A1A] placeholder-[#BDBDBD] leading-relaxed ${readOnly ? 'opacity-60 cursor-default' : ''}`}
+      />
+    </div>
+  )
+}
+
 function BloomAnimation({ onDone }) {
   return (
     <div
@@ -90,6 +108,7 @@ export default function TodayPage({ records, getEntry, updateRecord, streak }) {
 
   function handleGratitude(index, val) { updateRecord(activeDate, index, val) }
   function handleGiving(val) { updateRecord(activeDate, 'giving', val) }
+  function handleRepentance(val) { updateRecord(activeDate, 'repentance', val) }
 
   const d = new Date(activeDate + 'T00:00:00')
   const month = d.getMonth() + 1
@@ -168,6 +187,15 @@ export default function TodayPage({ records, getEntry, updateRecord, streak }) {
           <GivingField
             value={entry.giving || ''}
             onChange={handleGiving}
+            readOnly={readOnly}
+          />
+        </div>
+
+        <div>
+          <p className="text-xs text-[#888] uppercase tracking-widest mb-3">一件忏悔 <span className="normal-case text-[#CCC]">· 选填</span></p>
+          <RepentanceField
+            value={entry.repentance || ''}
+            onChange={handleRepentance}
             readOnly={readOnly}
           />
         </div>

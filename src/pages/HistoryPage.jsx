@@ -137,6 +137,15 @@ export default function HistoryPage({ records, getEntry }) {
               {(selectedEntry.giving || '').trim() || '未填写'}
             </p>
           </div>
+
+          {(selectedEntry.repentance || '').trim() && (
+            <div className="border-t border-[#F0EDE8] pt-3">
+              <p className="text-xs text-[#888] mb-1.5">一件忏悔</p>
+              <p className="text-sm leading-relaxed text-[#7C6FA0]">
+                {selectedEntry.repentance.trim()}
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

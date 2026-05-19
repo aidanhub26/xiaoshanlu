@@ -15,6 +15,7 @@ export function yesterday() {
   return toDateStr(d)
 }
 
+// Streak only requires 3 gratitude + 1 giving; repentance is optional
 export function isComplete(entry) {
   if (!entry) return false
   const g = entry.gratitude || ['', '', '']
@@ -44,6 +45,8 @@ export function calcStreak(records) {
   return streak
 }
 
+const EMPTY = { gratitude: ['', '', ''], giving: '', repentance: '' }
+
 export function useRecords(userId) {
   const [records, setRecords] = useState({})
   const [loading, setLoading] = useState(true)
@@ -53,12 +56,12 @@ export function useRecords(userId) {
     setLoading(true)
     supabase
       .from('xiaoshanlu_records')
-      .select('date, gratitude, giving')
+      .select('date, gratitude, giving, repentance')
       .eq('user_id', userId)
       .then(({ data }) => {
         const map = {}
         for (const row of data || []) {
-          map[row.date] = { gratitude: row.gratitude, giving: row.giving }
+          map[row.date] = { gratitude: row.gratitude, giving: row.giving, repentance: row.repentance || '' }
         }
         setRecords(map)
         setLoading(false)
@@ -67,30 +70,29 @@ export function useRecords(userId) {
 
   const updateRecord = useCallback((dateStr, field, value) => {
     setRecords(prev => {
-      const entry = prev[dateStr] || { gratitude: ['', '', ''], giving: '' }
+      const entry = prev[dateStr] || { ...EMPTY }
       let next
-      if (field === 'giving') {
-        next = { ...entry, giving: value }
+      if (field === 'giving' || field === 'repentance') {
+        next = { ...entry, [field]: value }
       } else {
         const g = [...(entry.gratitude || ['', '', ''])]
         g[field] = value
         next = { ...entry, gratitude: g }
       }
-      const updated = { ...prev, [dateStr]: next }
-      // Fire-and-forget upsert
       supabase.from('xiaoshanlu_records').upsert({
         user_id: userId,
         date: dateStr,
         gratitude: next.gratitude,
         giving: next.giving,
+        repentance: next.repentance,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id,date' })
-      return updated
+      return { ...prev, [dateStr]: next }
     })
   }, [userId])
 
   const getEntry = useCallback((dateStr) => {
-    return records[dateStr] || { gratitude: ['', '', ''], giving: '' }
+    return records[dateStr] || { ...EMPTY }
   }, [records])
 
   return { records, getEntry, updateRecord, loading }
