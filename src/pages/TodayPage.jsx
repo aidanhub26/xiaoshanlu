@@ -1,22 +1,7 @@
 import { useState } from 'react'
-import { today, yesterday, isEditable, isComplete, calcStreak, useRecords } from '../hooks/useRecords'
+import { today, yesterday, isComplete } from '../hooks/useRecords'
 
 const DEFINITION = '无相布施，即不求回报的给予。无论以金钱、时间、劳力或任何善意之举帮助他人，皆为布施。'
-
-function DateTab({ label, dateStr, active, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-        active
-          ? 'bg-[#2D6A4F] text-white'
-          : 'text-[#888] hover:text-[#1A1A1A]'
-      }`}
-    >
-      {label}
-    </button>
-  )
-}
 
 function GratitudeField({ index, value, onChange, readOnly }) {
   return (
@@ -61,44 +46,57 @@ function GivingField({ value, onChange, readOnly }) {
 export default function TodayPage({ records, getEntry, updateRecord, streak }) {
   const [activeDate, setActiveDate] = useState(today())
   const entry = getEntry(activeDate)
-  const readOnly = !isEditable(activeDate)
   const complete = isComplete(entry)
 
   const todayStr = today()
   const yesterdayStr = yesterday()
+  const isToday = activeDate === todayStr
 
-  function handleGratitude(index, val) {
-    updateRecord(activeDate, index, val)
-  }
-  function handleGiving(val) {
-    updateRecord(activeDate, 'giving', val)
-  }
+  function handleGratitude(index, val) { updateRecord(activeDate, index, val) }
+  function handleGiving(val) { updateRecord(activeDate, 'giving', val) }
 
-  const todayDate = new Date()
-  const month = todayDate.getMonth() + 1
-  const day = todayDate.getDate()
+  const d = new Date(activeDate + 'T00:00:00')
+  const month = d.getMonth() + 1
+  const day = d.getDate()
   const weekDays = ['日', '一', '二', '三', '四', '五', '六']
-  const weekDay = weekDays[todayDate.getDay()]
+  const weekDay = weekDays[d.getDay()]
 
   return (
     <div className="flex-1 flex flex-col overflow-y-auto pb-24">
       {/* Header */}
       <div className="px-6 pt-8 pb-4">
         <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[#888] text-sm">{month}月{day}日 · 周{weekDay}</p>
+          {/* Date nav with arrows */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setActiveDate(yesterdayStr)}
+              disabled={activeDate === yesterdayStr}
+              className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${activeDate === yesterdayStr ? 'text-[#DDD]' : 'text-[#888] hover:bg-[#F0EDE8]'}`}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </button>
+            <div className="text-center">
+              <p className="text-base font-semibold text-[#1A1A1A]">{month}月{day}日 · 周{weekDay}</p>
+              <p className="text-xs text-[#999] mt-0.5">{isToday ? '今天' : '昨天'}</p>
+            </div>
+            <button
+              onClick={() => setActiveDate(todayStr)}
+              disabled={isToday}
+              className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${isToday ? 'text-[#DDD]' : 'text-[#888] hover:bg-[#F0EDE8]'}`}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
           </div>
+
           {/* Streak */}
           <div className="flex items-center gap-1.5 bg-[#FDF6E3] px-3 py-1.5 rounded-full">
             <span className="text-[#C49A3C] text-base">🔥</span>
             <span className="text-[#C49A3C] font-semibold text-sm">{streak} 天</span>
           </div>
-        </div>
-
-        {/* Date tabs */}
-        <div className="flex gap-2 mt-4">
-          <DateTab label="昨天" dateStr={yesterdayStr} active={activeDate === yesterdayStr} onClick={() => setActiveDate(yesterdayStr)} />
-          <DateTab label="今天" dateStr={todayStr} active={activeDate === todayStr} onClick={() => setActiveDate(todayStr)} />
         </div>
       </div>
 
