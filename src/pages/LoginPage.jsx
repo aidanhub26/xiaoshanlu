@@ -43,9 +43,7 @@ export default function LoginPage() {
 
         {/* Logo */}
         <div className="flex flex-col items-center mb-10">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style={{ background: GREEN }}>
-            <LotusIcon size={38} />
-          </div>
+          <img src="/icon-512.png" alt="小善录" className="w-20 h-20 rounded-2xl mb-4" />
           <h1 className="text-xl font-semibold text-[#1A1A1A] tracking-wide">小善录</h1>
           <p className="text-sm text-[#999] mt-1">每日三恩一施，点滴善念记录</p>
         </div>

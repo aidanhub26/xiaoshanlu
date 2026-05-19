@@ -40,7 +40,7 @@ const HistoryNavIcon = () => (
 function LoadingScreen() {
   return (
     <div className="min-h-dvh flex items-center justify-center" style={{ background: '#FAFAF8' }}>
-      <LotusIcon size={32} />
+      <img src="/icon-512.png" alt="" className="w-12 h-12 rounded-xl opacity-80" />
     </div>
   )
 }
@@ -59,7 +59,7 @@ export default function App() {
       {/* Top bar */}
       <div className="flex items-center justify-between px-6 pt-4 pb-3 border-b border-[#F0EDE8]">
         <div className="flex items-center gap-2">
-          <LotusIcon size={26} />
+          <img src="/icon-512.png" alt="" className="w-7 h-7 rounded-lg" />
           <span className="text-base font-semibold text-[#1A1A1A] tracking-wide">小善录</span>
         </div>
         <button
