@@ -56,12 +56,12 @@ export default function App() {
   return (
     <div className="flex flex-col min-h-dvh">
       {/* Top bar */}
-      <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-[#F0EDE8]">
+      <div className="relative flex items-center justify-between px-5 pt-4 pb-3 border-b border-[#F0EDE8]">
         <div className="flex items-center gap-2">
           <img src="/icon-512.png" alt="" className="w-7 h-7 rounded-lg" />
           <span className="text-base font-semibold text-[#1A1A1A] tracking-wide">小善录</span>
         </div>
-        <div className="flex items-center gap-1.5 bg-[#FDF6E3] px-3 py-1.5 rounded-full">
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-[#FDF6E3] px-3 py-1.5 rounded-full">
           <span className="text-base leading-none">🪷</span>
           <span className="text-[#C49A3C] font-semibold text-sm">{streak} 天</span>
         </div>

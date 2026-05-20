@@ -122,7 +122,7 @@ export default function TodayPage({ getEntry, updateRecord, saveStatus }) {
       )}
 
       {/* Date nav */}
-      <div className="px-4 pt-6 pb-4 flex items-center justify-between">
+      <div className="relative px-4 pt-6 pb-4 flex items-center justify-between">
         {activeDate !== yesterdayStr ? (
           <button
             onClick={() => setActiveDate(yesterdayStr)}
@@ -134,7 +134,7 @@ export default function TodayPage({ getEntry, updateRecord, saveStatus }) {
           </button>
         ) : <div className="w-9" />}
 
-        <div className="flex items-center gap-4">
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-4">
           <span className="text-sm text-[#999]">{month}月{day}日</span>
           <span className="text-base font-semibold text-[#1A1A1A]">{isToday ? '今天' : '昨天'}</span>
           <span className="text-sm text-[#999]">周{weekDay}</span>
