@@ -84,7 +84,7 @@ function BloomAnimation({ onDone }) {
   )
 }
 
-export default function TodayPage({ records, getEntry, updateRecord, streak }) {
+export default function TodayPage({ records, getEntry, updateRecord, streak, saveStatus }) {
   const [activeDate, setActiveDate] = useState(today())
   const [showBloom, setShowBloom] = useState(false)
   const entry = getEntry(activeDate)
@@ -119,6 +119,13 @@ export default function TodayPage({ records, getEntry, updateRecord, streak }) {
   return (
     <div className="flex-1 flex flex-col overflow-y-auto pb-24">
       {showBloom && <BloomAnimation onDone={() => setShowBloom(false)} />}
+
+      {/* Save status */}
+      {saveStatus && saveStatus.startsWith('error') && (
+        <div className="mx-6 mt-4 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 text-xs text-red-500">
+          保存失败：{saveStatus.replace('error:', '')}
+        </div>
+      )}
 
       {/* Header */}
       <div className="px-6 pt-8 pb-4">

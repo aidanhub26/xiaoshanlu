@@ -50,6 +50,7 @@ const EMPTY = { gratitude: ['', '', ''], giving: '', repentance: '' }
 export function useRecords(userId) {
   const [records, setRecords] = useState({})
   const [loading, setLoading] = useState(true)
+  const [saveStatus, setSaveStatus] = useState(null) // 'saving' | 'ok' | 'error'
 
   useEffect(() => {
     if (!userId) { setRecords({}); setLoading(false); return }
@@ -58,7 +59,8 @@ export function useRecords(userId) {
       .from('xiaoshanlu_records')
       .select('date, gratitude, giving, repentance')
       .eq('user_id', userId)
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) { console.error('Load error:', error); setLoading(false); return }
         const map = {}
         for (const row of data || []) {
           map[row.date] = { gratitude: row.gratitude, giving: row.giving, repentance: row.repentance || '' }
@@ -83,7 +85,8 @@ export function useRecords(userId) {
       nextEntry = next
       return { ...prev, [dateStr]: next }
     })
-    if (nextEntry) {
+    if (nextEntry && userId) {
+      setSaveStatus('saving')
       supabase.from('xiaoshanlu_records').upsert({
         user_id: userId,
         date: dateStr,
@@ -92,7 +95,15 @@ export function useRecords(userId) {
         repentance: nextEntry.repentance,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id,date' })
-        .then(({ error }) => { if (error) console.error('Save error:', error) })
+        .then(({ error }) => {
+          if (error) {
+            console.error('Save error:', error)
+            setSaveStatus('error:' + error.message)
+          } else {
+            setSaveStatus('ok')
+            setTimeout(() => setSaveStatus(null), 2000)
+          }
+        })
     }
   }, [userId])
 
@@ -100,5 +111,5 @@ export function useRecords(userId) {
     return records[dateStr] || { ...EMPTY }
   }, [records])
 
-  return { records, getEntry, updateRecord, loading }
+  return { records, getEntry, updateRecord, loading, saveStatus }
 }
