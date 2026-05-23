@@ -205,8 +205,8 @@ export default function TodayPage({ getEntry, updateRecord, saveStatus }) {
           />
         </div>
 
-<div className="rounded-xl bg-[#F7F5F1] px-4 py-3">
-          <p className="text-[13px] text-[#999] leading-relaxed">{DEFINITION}</p>
+<div className="px-1 py-2">
+          <p className="text-[13px] text-[#BDBDBD] leading-relaxed">{DEFINITION}</p>
         </div>
 
       </div>
