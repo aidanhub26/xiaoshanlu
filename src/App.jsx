@@ -47,7 +47,7 @@ function LoadingScreen() {
 export default function App() {
   const user = useAuth()
   const [tab, setTab] = useState('today')
-  const { records, getEntry, updateRecord, loading, saveStatus } = useRecords(user?.id)
+  const { records, getEntry, updateRecord, flushDate, loading, saveStatus } = useRecords(user?.id)
   const streak = calcStreak(records)
 
   if (user === undefined || (user && loading)) return <LoadingScreen />
@@ -76,7 +76,7 @@ export default function App() {
       {/* Page content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {tab === 'today'
-          ? <TodayPage getEntry={getEntry} updateRecord={updateRecord} saveStatus={saveStatus} />
+          ? <TodayPage getEntry={getEntry} updateRecord={updateRecord} flushDate={flushDate} saveStatus={saveStatus} />
           : <HistoryPage records={records} getEntry={getEntry} />
         }
       </div>

@@ -78,7 +78,6 @@ export function useRecords(userId) {
       date: dateStr,
       gratitude: entry.gratitude,
       giving: entry.giving,
-      updated_at: new Date().toISOString(),
     }, { onConflict: 'user_id,date' })
       .then(({ error }) => {
         if (error) {
@@ -111,34 +110,44 @@ export function useRecords(userId) {
   }, [saveToSupabase])
 
   const updateRecord = useCallback((dateStr, field, value) => {
-    let nextEntry
     setRecords(prev => {
       const entry = prev[dateStr] || { ...EMPTY }
       let next
-      if (field === 'giving' || field === 'repentance') {
+      if (field === 'giving') {
         next = { ...entry, [field]: value }
       } else {
         const g = [...(entry.gratitude || ['', '', ''])]
         g[field] = value
         next = { ...entry, gratitude: g }
       }
-      nextEntry = next
+      // Update inside updater to guarantee capture (React 18 concurrent safe)
+      if (userId) pendingEntries.current[dateStr] = next
       return { ...prev, [dateStr]: next }
     })
 
-    if (nextEntry && userId) {
-      pendingEntries.current[dateStr] = nextEntry
+    if (userId) {
       clearTimeout(debounceTimers.current[dateStr])
       debounceTimers.current[dateStr] = setTimeout(() => {
-        saveToSupabase(dateStr, nextEntry)
-        delete pendingEntries.current[dateStr]
+        const entryToSave = pendingEntries.current[dateStr]
+        if (entryToSave) {
+          saveToSupabase(dateStr, entryToSave)
+          delete pendingEntries.current[dateStr]
+        }
       }, 300)
     }
   }, [userId, saveToSupabase])
+
+  // Immediately flush any pending save for a date (call when navigating away)
+  const flushDate = useCallback((dateStr) => {
+    if (!pendingEntries.current[dateStr]) return
+    clearTimeout(debounceTimers.current[dateStr])
+    saveToSupabase(dateStr, pendingEntries.current[dateStr])
+    delete pendingEntries.current[dateStr]
+  }, [saveToSupabase])
 
   const getEntry = useCallback((dateStr) => {
     return records[dateStr] || { ...EMPTY }
   }, [records])
 
-  return { records, getEntry, updateRecord, loading, saveStatus }
+  return { records, getEntry, updateRecord, flushDate, loading, saveStatus }
 }

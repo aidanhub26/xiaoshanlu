@@ -21,20 +21,35 @@ function GratitudeField({ index, value, onChange, readOnly }) {
   )
 }
 
-function GivingField({ value, onChange, readOnly }) {
+function GivingField({ value, onChange, readOnly, givingDone, onGivingDone }) {
   return (
     <div className="flex items-start gap-3">
       <span className="mt-3 w-5 h-5 rounded-full bg-[#FDF6E3] text-[#C49A3C] text-xs flex items-center justify-center font-medium flex-shrink-0">
         施
       </span>
-      <textarea
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        readOnly={readOnly}
-        placeholder=""
-        rows={2}
-        className={`flex-1 bg-[#F7F5F1] rounded-xl px-4 py-3 text-[15px] text-[#1A1A1A] placeholder-[#BDBDBD] leading-relaxed ${readOnly ? 'opacity-60 cursor-default' : ''}`}
-      />
+      <div className="flex-1 relative">
+        <textarea
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          readOnly={readOnly || givingDone}
+          placeholder=""
+          rows={2}
+          className={`w-full bg-[#F7F5F1] rounded-xl px-4 py-3 pr-10 text-[15px] text-[#1A1A1A] placeholder-[#BDBDBD] leading-relaxed ${(readOnly || givingDone) ? 'opacity-60 cursor-default' : ''}`}
+        />
+        {!readOnly && value.trim() && !givingDone && (
+          <button
+            onClick={onGivingDone}
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#2D6A4F] flex items-center justify-center"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+        )}
+        {givingDone && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#2D6A4F] text-sm">✓</span>
+        )}
+      </div>
     </div>
   )
 }
@@ -58,14 +73,26 @@ function BloomAnimation() {
   )
 }
 
-export default function TodayPage({ getEntry, updateRecord, saveStatus }) {
+export default function TodayPage({ getEntry, updateRecord, flushDate, saveStatus }) {
   const [activeDate, setActiveDate] = useState(today())
   const [showBloom, setShowBloom] = useState(false)
+  const prevDateRef = useRef(activeDate)
   const [confirmedDates, setConfirmedDates] = useState(new Set())
+  const [givingDoneDates, setGivingDoneDates] = useState(new Set())
   const entry = getEntry(activeDate)
   const complete = isComplete(entry)
   const readOnly = !isEditable(activeDate)
   const confirmed = confirmedDates.has(activeDate)
+  const givingDone = givingDoneDates.has(activeDate)
+
+  // Flush any unsaved changes when the user navigates to a different date
+  useEffect(() => {
+    const prev = prevDateRef.current
+    if (prev !== activeDate) {
+      flushDate(prev)
+      prevDateRef.current = activeDate
+    }
+  }, [activeDate, flushDate])
 
   const todayStr = today()
   const yesterdayStr = yesterday()
@@ -195,10 +222,12 @@ export default function TodayPage({ getEntry, updateRecord, saveStatus }) {
             value={entry.giving || ''}
             onChange={handleGiving}
             readOnly={readOnly}
+            givingDone={givingDone}
+            onGivingDone={() => setGivingDoneDates(prev => new Set([...prev, activeDate]))}
           />
         </div>
 
-        {complete && !readOnly && (
+        {complete && givingDone && !readOnly && (
           <button
             onClick={handleConfirm}
             className="w-full py-3.5 rounded-xl font-medium text-[15px] transition-all duration-300"
