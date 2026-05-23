@@ -15,7 +15,6 @@ export function yesterday() {
   return toDateStr(d)
 }
 
-// Streak only requires 3 gratitude + 1 giving; repentance is optional
 export function isComplete(entry) {
   if (!entry) return false
   const g = entry.gratitude || ['', '', '']
@@ -35,10 +34,7 @@ export function calcStreak(records) {
       streak++
       cur.setDate(cur.getDate() - 1)
     } else {
-      if (i === 0 && d === today()) {
-        cur.setDate(cur.getDate() - 1)
-        continue
-      }
+      if (i === 0 && d === today()) { cur.setDate(cur.getDate() - 1); continue }
       break
     }
   }
@@ -51,8 +47,10 @@ export function useRecords(userId) {
   const [records, setRecords] = useState({})
   const [loading, setLoading] = useState(true)
   const [saveStatus, setSaveStatus] = useState(null)
-  const debounceTimers = useRef({}) // one timer per dateStr
+  const debounceTimers = useRef({})
+  const pendingEntries = useRef({})
 
+  // Load all records on login
   useEffect(() => {
     if (!userId) { setRecords({}); setLoading(false); return }
     setLoading(true)
@@ -71,6 +69,7 @@ export function useRecords(userId) {
       })
   }, [userId])
 
+  // Write one record to Supabase
   const saveToSupabase = useCallback((dateStr, entry) => {
     if (!userId) return
     setSaveStatus('saving')
@@ -93,6 +92,25 @@ export function useRecords(userId) {
       })
   }, [userId])
 
+  // Flush pending saves immediately when user switches app or closes page
+  useEffect(() => {
+    const flush = () => {
+      const pending = pendingEntries.current
+      Object.keys(pending).forEach(dateStr => {
+        clearTimeout(debounceTimers.current[dateStr])
+        saveToSupabase(dateStr, pending[dateStr])
+      })
+      pendingEntries.current = {}
+    }
+    const onVisibility = () => { if (document.visibilityState === 'hidden') flush() }
+    document.addEventListener('visibilitychange', onVisibility)
+    window.addEventListener('pagehide', flush)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('pagehide', flush)
+    }
+  }, [saveToSupabase])
+
   const updateRecord = useCallback((dateStr, field, value) => {
     let nextEntry
     setRecords(prev => {
@@ -109,11 +127,12 @@ export function useRecords(userId) {
       return { ...prev, [dateStr]: next }
     })
 
-    // Debounce: cancel previous pending save for this date, fire after 800ms idle
     if (nextEntry && userId) {
+      pendingEntries.current[dateStr] = nextEntry
       clearTimeout(debounceTimers.current[dateStr])
       debounceTimers.current[dateStr] = setTimeout(() => {
         saveToSupabase(dateStr, nextEntry)
+        delete pendingEntries.current[dateStr]
       }, 800)
     }
   }, [userId, saveToSupabase])
