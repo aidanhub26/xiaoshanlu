@@ -132,15 +132,17 @@ export default function TodayPage({ getEntry, updateRecord, saveStatus }) {
         </button>
 
         {/* Center label */}
-        <span className="absolute left-1/2 -translate-x-1/2 text-base font-semibold text-[#1A1A1A]">
-          {isToday ? '今天' : isYesterday ? '昨天' : `${month}月${day}日`}
-        </span>
-        <span className="absolute text-sm text-[#999]" style={{ right: 'calc(50% + 2.8rem)' }}>
-          {isToday || isYesterday ? `${month}月${day}日` : ''}
-        </span>
-        <span className="absolute text-sm text-[#999]" style={{ left: 'calc(50% + 2.8rem)' }}>
-          周{weekDay}
-        </span>
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-baseline gap-1.5 whitespace-nowrap">
+          <span className="text-base font-semibold text-[#1A1A1A]">
+            {isToday ? '今天' : isYesterday ? '昨天' : `${month}月${day}日`}
+          </span>
+          {(isToday || isYesterday) && (
+            <span className="text-sm text-[#999]">（{month}月{day}日 · 周{weekDay}）</span>
+          )}
+          {!isToday && !isYesterday && (
+            <span className="text-sm text-[#999]">· 周{weekDay}</span>
+          )}
+        </div>
 
         {!isToday ? (
           <button
