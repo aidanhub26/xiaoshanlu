@@ -59,7 +59,7 @@ export default function App() {
       <div className="relative flex items-center justify-between px-5 pt-4 pb-3 border-b border-[#F0EDE8]">
         <div className="flex items-center gap-2">
           <img src="/icon-512.png" alt="" className="w-7 h-7 rounded-lg" />
-          <span className="text-base font-semibold text-[#1A1A1A] tracking-wide">小善录</span>
+          <span className="text-base font-semibold text-[#1A1A1A] tracking-wide">无相日记</span>
         </div>
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-[#FDF6E3] px-3 py-1.5 rounded-full">
           <span className="text-base leading-none">🪷</span>

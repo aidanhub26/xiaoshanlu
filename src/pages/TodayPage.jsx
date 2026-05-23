@@ -88,6 +88,19 @@ export default function TodayPage({ getEntry, updateRecord, saveStatus }) {
   const todayStr = today()
   const yesterdayStr = yesterday()
   const isToday = activeDate === todayStr
+  const isYesterday = activeDate === yesterdayStr
+
+  function prevDay() {
+    const d = new Date(activeDate + 'T00:00:00')
+    d.setDate(d.getDate() - 1)
+    setActiveDate(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`)
+  }
+  function nextDay() {
+    if (isToday) return
+    const d = new Date(activeDate + 'T00:00:00')
+    d.setDate(d.getDate() + 1)
+    setActiveDate(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`)
+  }
 
   // Only trigger bloom the very first time an entry is completed (not on re-edits or date switching)
   useEffect(() => {
@@ -126,25 +139,22 @@ export default function TodayPage({ getEntry, updateRecord, saveStatus }) {
       )}
 
       {/* Date nav */}
-      <div className="relative px-4 pt-6 pb-4 flex items-center justify-between">
-        {activeDate !== yesterdayStr ? (
-          <button
-            onClick={() => setActiveDate(yesterdayStr)}
-            className="w-9 h-9 flex items-center justify-center rounded-full text-[#888] hover:bg-[#F0EDE8] transition-all"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
-          </button>
-        ) : <div className="w-9" />}
+      <div className="relative px-4 pt-6 pb-2 flex items-center justify-between">
+        <button
+          onClick={prevDay}
+          className="w-9 h-9 flex items-center justify-center rounded-full text-[#888] hover:bg-[#F0EDE8] transition-all"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
 
-        {/* 今天/昨天 absolutely centered on screen */}
+        {/* Center label */}
         <span className="absolute left-1/2 -translate-x-1/2 text-base font-semibold text-[#1A1A1A]">
-          {isToday ? '今天' : '昨天'}
+          {isToday ? '今天' : isYesterday ? '昨天' : `${month}月${day}日`}
         </span>
-        {/* Date and weekday symmetrically offset from center */}
         <span className="absolute text-sm text-[#999]" style={{ right: 'calc(50% + 2.8rem)' }}>
-          {month}月{day}日
+          {isToday || isYesterday ? `${month}月${day}日` : ''}
         </span>
         <span className="absolute text-sm text-[#999]" style={{ left: 'calc(50% + 2.8rem)' }}>
           周{weekDay}
@@ -152,7 +162,7 @@ export default function TodayPage({ getEntry, updateRecord, saveStatus }) {
 
         {!isToday ? (
           <button
-            onClick={() => setActiveDate(todayStr)}
+            onClick={nextDay}
             className="w-9 h-9 flex items-center justify-center rounded-full text-[#888] hover:bg-[#F0EDE8] transition-all"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -176,7 +186,7 @@ export default function TodayPage({ getEntry, updateRecord, saveStatus }) {
       {complete && (
         <div className="mx-6 mb-2 flex items-center gap-2 bg-[#EBF4EF] rounded-xl px-4 py-2.5">
           <span className="text-[#2D6A4F] text-sm">✓</span>
-          <span className="text-[#2D6A4F] text-sm font-medium">{isToday ? '今日已完成' : '昨日已完成'}</span>
+          <span className="text-[#2D6A4F] text-sm font-medium">{isToday ? '今日已完成' : isYesterday ? '昨日已完成' : '当日已完成'}</span>
         </div>
       )}
 

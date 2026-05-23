@@ -22,7 +22,7 @@ export function isComplete(entry) {
 }
 
 export function isEditable(dateStr) {
-  return dateStr === today() || dateStr === yesterday()
+  return dateStr <= today() // all past dates and today are editable
 }
 
 export function calcStreak(records) {

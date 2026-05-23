@@ -10,9 +10,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: '小善录',
-        short_name: '小善录',
-        description: '每日三恩一施，点滴善念记录',
+        name: '无相日记',
+        short_name: '无相日记',
+        description: '每日感恩与布施，心念清净自在',
         theme_color: '#2D6A4F',
         background_color: '#FAFAF8',
         display: 'standalone',
