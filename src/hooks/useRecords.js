@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 
 export function toDateStr(date) {
@@ -50,7 +50,8 @@ const EMPTY = { gratitude: ['', '', ''], giving: '', repentance: '' }
 export function useRecords(userId) {
   const [records, setRecords] = useState({})
   const [loading, setLoading] = useState(true)
-  const [saveStatus, setSaveStatus] = useState(null) // 'saving' | 'ok' | 'error'
+  const [saveStatus, setSaveStatus] = useState(null)
+  const debounceTimers = useRef({}) // one timer per dateStr
 
   useEffect(() => {
     if (!userId) { setRecords({}); setLoading(false); return }
@@ -70,6 +71,28 @@ export function useRecords(userId) {
       })
   }, [userId])
 
+  const saveToSupabase = useCallback((dateStr, entry) => {
+    if (!userId) return
+    setSaveStatus('saving')
+    supabase.from('xiaoshanlu_records').upsert({
+      user_id: userId,
+      date: dateStr,
+      gratitude: entry.gratitude,
+      giving: entry.giving,
+      repentance: entry.repentance,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id,date' })
+      .then(({ error }) => {
+        if (error) {
+          console.error('Save error:', error)
+          setSaveStatus('error:' + error.message)
+        } else {
+          setSaveStatus('ok')
+          setTimeout(() => setSaveStatus(null), 2000)
+        }
+      })
+  }, [userId])
+
   const updateRecord = useCallback((dateStr, field, value) => {
     let nextEntry
     setRecords(prev => {
@@ -85,27 +108,15 @@ export function useRecords(userId) {
       nextEntry = next
       return { ...prev, [dateStr]: next }
     })
+
+    // Debounce: cancel previous pending save for this date, fire after 800ms idle
     if (nextEntry && userId) {
-      setSaveStatus('saving')
-      supabase.from('xiaoshanlu_records').upsert({
-        user_id: userId,
-        date: dateStr,
-        gratitude: nextEntry.gratitude,
-        giving: nextEntry.giving,
-        repentance: nextEntry.repentance,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id,date' })
-        .then(({ error }) => {
-          if (error) {
-            console.error('Save error:', error)
-            setSaveStatus('error:' + error.message)
-          } else {
-            setSaveStatus('ok')
-            setTimeout(() => setSaveStatus(null), 2000)
-          }
-        })
+      clearTimeout(debounceTimers.current[dateStr])
+      debounceTimers.current[dateStr] = setTimeout(() => {
+        saveToSupabase(dateStr, nextEntry)
+      }, 800)
     }
-  }, [userId])
+  }, [userId, saveToSupabase])
 
   const getEntry = useCallback((dateStr) => {
     return records[dateStr] || { ...EMPTY }
